@@ -10,7 +10,7 @@ from utils.plugin_base import PluginBase
 class Music_puls(PluginBase):
     description = "点歌"
     author = "电脑小白"
-    version = "2.0.1"
+    version = "2.0.2"
 
     def __init__(self):
         super().__init__()
@@ -26,14 +26,13 @@ class Music_puls(PluginBase):
         self.play_command = config.get("play_command", "播放")
         self.search_results = {}
         self.api_url = config["api_url"]
-        # 新增：读取日志配置
         self.log_enabled = config.get("log", {}).get("enabled", True)
         self.log_level = config.get("log", {}).get("level", "DEBUG").upper()
-        # 新增：读取功能控制配置
         self.fetch_song_list = config.get("features", {}).get("fetch_song_list", True)
-        # 初始化日志级别
+        # 新增：读取卡片类型配置（默认使用原卡片）
+        self.card_type = config.get("card_type", "default")  # 关键修改1
         logger.level(self.log_level)
-        logger.info(f"插件初始化完成 | 启用状态: {self.enable} | 触发命令: {self.command} | 播放命令: {self.play_command} | API地址: {self.api_url}")
+        logger.info(f"插件初始化完成 | 启用状态: {self.enable} | 触发命令: {self.command} | 播放命令: {self.play_command} | API地址: {self.api_url} | 卡片类型: {self.card_type}")
 
     async def _fetch_song_list(self, song_name: str) -> list:
         """调用API获取歌曲列表."""
@@ -162,19 +161,104 @@ class Music_puls(PluginBase):
                 await bot.send_at_message(message["FromWxid"], response_text, [message["SenderWxid"]])
                 return False
             else:
-                # 新增：直接获取首歌逻辑
+                # 直接获取首歌曲逻辑
                 if self.log_enabled:
                     logger.debug(f"直接获取首歌曲详情 | 歌曲名: {song_name}")
                 song_data = await self._fetch_song_data(song_name, 1)
                 if song_data:
-                    # 原有歌曲信息发送逻辑
                     title = song_data["title"]
                     singer = song_data["singer"]
                     url = song_data.get("link", "")
                     music_url = song_data.get("music_url", "").split("?")[0]
                     cover_url = song_data.get("cover", "")
-                    lyric = song_data.get("lrc", "")
-                    xml = f"""<appmsg appid="wx79f2c4418704b4f8" sdkver="0"><title>{title}</title><des>{singer}</des><action>view</action><type>3</type><showtype>0</showtype><content/><url>{url}</url><dataurl>{music_url}</dataurl><lowurl>{url}</lowurl><lowdataurl>{music_url}</lowdataurl><recorditem/><thumburl>{cover_url}</thumburl><messageaction/><laninfo/><extinfo/><sourceusername/><sourcedisplayname/><songlyric>{lyric}</songlyric><commenturl/><appattach><totallen>0</totallen><attachid/><emoticonmd5/><fileext/><aeskey/></appattach><webviewshared><publisherId/><publisherReqId>0</publisherReqId></webviewshared><weappinfo><pagepath/><username/><appid/><appservicetype>0</appservicetype></weappinfo><websearch/><songalbumurl>{cover_url}</songalbumurl></appmsg><fromusername>{bot.wxid}</fromusername><scene>0</scene><appinfo><version>1</version><appname/></appinfo><commenturl/>"""
+                    # 修改：歌词字段从lrc改为lyrics
+                    lyric = song_data.get("lyrics", "")  # 关键修改1
+                    
+                    # 根据卡片类型选择模板（关键修改2）
+                    if self.card_type == "shake":
+                        xml = f"""<appmsg appid="wx485a97c844086dc9" sdkver="0">
+    <title>{title}</title>
+    <des>{singer}</des>
+    <action>view</action>
+    <type>3</type>
+    <showtype>0</showtype>
+    <content/>
+    <url>{url}</url>
+    <dataurl>{music_url}</dataurl>
+    <lowurl>{url}</lowurl>
+    <lowdataurl>{music_url}</lowdataurl>
+    <thumburl>{cover_url}</thumburl>
+    <songlyric>{lyric}</songlyric>  <!-- 歌词已通过lyric变量注入 -->
+    <songalbumurl>{cover_url}</songalbumurl>
+    <appattach>
+        <totallen>0</totallen>
+        <attachid/>
+        <emoticonmd5/>
+        <fileext/>
+        <aeskey/>
+    </appattach>
+    <weappinfo>
+        <pagepath/>
+        <username/>
+        <appid/>
+        <appservicetype>0</appservicetype>
+    </weappinfo>
+</appmsg>
+<fromusername>{bot.wxid}</fromusername>
+<scene>0</scene>
+<appinfo>
+    <version>29</version>
+    <appname>摇一摇搜歌</appname>
+</appinfo>
+<commenturl/>"""
+                    else:
+                        xml = f"""<appmsg appid="wx79f2c4418704b4f8" sdkver="0">
+    <title>{title}</title>
+    <des>{singer}</des>
+    <action>view</action>
+    <type>3</type>
+    <showtype>0</showtype>
+    <content/>
+    <url>{url}</url>
+    <dataurl>{music_url}</dataurl>
+    <lowurl>{url}</lowurl>
+    <lowdataurl>{music_url}</lowdataurl>
+    <recorditem/>
+    <thumburl>{cover_url}</thumburl>
+    <messageaction/>
+    <laninfo/>
+    <extinfo/>
+    <sourceusername/>
+    <sourcedisplayname/>
+    <songlyric>{lyric}</songlyric>
+    <commenturl/>
+    <appattach>
+        <totallen>0</totallen>
+        <attachid/>
+        <emoticonmd5/>
+        <fileext/>
+        <aeskey/>
+    </appattach>
+    <webviewshared>
+        <publisherId/>
+        <publisherReqId>0</publisherReqId>
+    </webviewshared>
+    <weappinfo>
+        <pagepath/>
+        <username/>
+        <appid/>
+        <appservicetype>0</appservicetype>
+    </weappinfo>
+    <websearch/>
+    <songalbumurl>{cover_url}</songalbumurl>
+</appmsg>
+<fromusername>{bot.wxid}</fromusername>
+<scene>0</scene>
+<appinfo>
+    <version>1</version>
+    <appname/>
+</appinfo>
+<commenturl/>"""
                     await bot.send_app_message(message["FromWxid"], xml, 3)
                     return False
                 else:
@@ -201,9 +285,94 @@ class Music_puls(PluginBase):
                         url = song_data.get("link", "")
                         music_url = song_data.get("music_url", "").split("?")[0]
                         cover_url = song_data.get("cover", "")
-                        lyric = song_data.get("lrc", "")
+                        # 修改：歌词字段从lrc改为lyrics
+                        lyric = song_data.get("lyrics", "")  # 关键修改3
 
-                        xml = f"""<appmsg appid="wx79f2c4418704b4f8" sdkver="0"><title>{title}</title><des>{singer}</des><action>view</action><type>3</type><showtype>0</showtype><content/><url>{url}</url><dataurl>{music_url}</dataurl><lowurl>{url}</lowurl><lowdataurl>{music_url}</lowdataurl><recorditem/><thumburl>{cover_url}</thumburl><messageaction/><laninfo/><extinfo/><sourceusername/><sourcedisplayname/><songlyric>{lyric}</songlyric><commenturl/><appattach><totallen>0</totallen><attachid/><emoticonmd5/><fileext/><aeskey/></appattach><webviewshared><publisherId/><publisherReqId>0</publisherReqId></webviewshared><weappinfo><pagepath/><username/><appid/><appservicetype>0</appservicetype></weappinfo><websearch/><songalbumurl>{cover_url}</songalbumurl></appmsg><fromusername>{bot.wxid}</fromusername><scene>0</scene><appinfo><version>1</version><appname/></appinfo><commenturl/>"""
+                        # 根据卡片类型选择模板（关键修改4）
+                        if self.card_type == "shake":
+                            xml = f"""<appmsg appid="wx485a97c844086dc9" sdkver="0">
+    <title>{title}</title>
+    <des>{singer}</des>
+    <action>view</action>
+    <type>3</type>
+    <showtype>0</showtype>
+    <content/>
+    <url>{url}</url>
+    <dataurl>{music_url}</dataurl>
+    <lowurl>{url}</lowurl>
+    <lowdataurl>{music_url}</lowdataurl>
+    <thumburl>{cover_url}</thumburl>
+    <songlyric>{lyric}</songlyric>  <!-- 歌词已通过lyric变量注入 -->
+    <songalbumurl>{cover_url}</songalbumurl>
+    <appattach>
+        <totallen>0</totallen>
+        <attachid/>
+        <emoticonmd5/>
+        <fileext/>
+        <aeskey/>
+    </appattach>
+    <weappinfo>
+        <pagepath/>
+        <username/>
+        <appid/>
+        <appservicetype>0</appservicetype>
+    </weappinfo>
+</appmsg>
+<fromusername>{bot.wxid}</fromusername>
+<scene>0</scene>
+<appinfo>
+    <version>29</version>
+    <appname>摇一摇搜歌</appname>
+</appinfo>
+<commenturl/>"""
+                        else:
+                            xml = f"""<appmsg appid="wx79f2c4418704b4f8" sdkver="0">
+    <title>{title}</title>
+    <des>{singer}</des>
+    <action>view</action>
+    <type>3</type>
+    <showtype>0</showtype>
+    <content/>
+    <url>{url}</url>
+    <dataurl>{music_url}</dataurl>
+    <lowurl>{url}</lowurl>
+    <lowdataurl>{music_url}</lowdataurl>
+    <recorditem/>
+    <thumburl>{cover_url}</thumburl>
+    <messageaction/>
+    <laninfo/>
+    <extinfo/>
+    <sourceusername/>
+    <sourcedisplayname/>
+    <songlyric>{lyric}</songlyric>
+    <commenturl/>
+    <appattach>
+        <totallen>0</totallen>
+        <attachid/>
+        <emoticonmd5/>
+        <fileext/>
+        <aeskey/>
+    </appattach>
+    <webviewshared>
+        <publisherId/>
+        <publisherReqId>0</publisherReqId>
+    </webviewshared>
+    <weappinfo>
+        <pagepath/>
+        <username/>
+        <appid/>
+        <appservicetype>0</appservicetype>
+    </weappinfo>
+    <websearch/>
+    <songalbumurl>{cover_url}</songalbumurl>
+</appmsg>
+<fromusername>{bot.wxid}</fromusername>
+<scene>0</scene>
+<appinfo>
+    <version>1</version>
+    <appname/>
+</appinfo>
+<commenturl/>"""
                         await bot.send_app_message(message["FromWxid"], xml, 3)
                         return False  # 成功发送歌曲，阻止其他插件
                     else:
