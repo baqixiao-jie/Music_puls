@@ -4,7 +4,7 @@ command = ["点歌", "音乐"]
 command-format = "请使用「点歌 歌曲名」格式点歌"
 play_command = "播放"
 api_url = "https://www.hhlqilongzhu.cn/api/dg_kgmusic.php"
-
+card_type = "shake"  # 切换为新摇一摇卡片（改为default使用原卡片）
 # 新增日志配置
 [Music_puls.log]
 enabled = true               # 日志总开关（true=启用，false=禁用）
