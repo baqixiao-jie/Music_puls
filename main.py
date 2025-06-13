@@ -11,7 +11,7 @@ from utils.plugin_base import PluginBase
 class Music_puls(PluginBase):
     description = "点歌插件魔改版，支持指令：点歌 歌曲名、切换卡片、切换列表。"
     author = "电脑小白"
-    version = "2.0.3"
+    version = "2.0.4"
 
     def __init__(self):
         super().__init__()
@@ -357,22 +357,15 @@ class Music_puls(PluginBase):
     <dataurl>{music_url}</dataurl>
     <lowurl>{url}</lowurl>
     <lowdataurl>{music_url}</lowdataurl>
-    <thumburl>{cover_url}</thumburl>  <!-- 使用有效图片链接 -->
+    <thumburl /> <!-- 改为空标签 -->
     <songlyric>{lyric}</songlyric>
-    <songalbumurl>{cover_url}</songalbumurl>
-    <appattach>  <!-- 补充CDN相关字段（模拟test.py结构） -->
+    <songalbumurl>{cover_url}</songalbumurl> <!-- 依赖此字段显示图片 -->
+    <appattach> <!-- 恢复简洁结构 -->
         <totallen>0</totallen>
         <attachid/>
         <emoticonmd5/>
-        <fileext>jpg</fileext>  <!-- 明确图片类型 -->
+        <fileext/>
         <aeskey/>
-        <cdnthumburl>{cover_url}</cdnthumburl>  <!-- 用cover_url填充CDN地址 -->
-        <cdnthumbaeskey/>
-        <cdnthumbmd5/>
-        <encryver>1</encryver>
-        <cdnthumblength>0</cdnthumblength>
-        <cdnthumbheight>100</cdnthumbheight>
-        <cdnthumbwidth>100</cdnthumbwidth>
     </appattach>
     <weappinfo>
         <pagepath/>
@@ -401,7 +394,7 @@ class Music_puls(PluginBase):
     <lowurl>{url}</lowurl>
     <lowdataurl>{music_url}</lowdataurl>
     <recorditem/>
-    <thumburl>{cover_url}</thumburl>  <!-- 使用有效图片链接 -->
+    <thumburl /> <!-- 改为空标签 -->
     <messageaction/>
     <laninfo/>
     <extinfo/>
@@ -409,19 +402,12 @@ class Music_puls(PluginBase):
     <sourcedisplayname/>
     <songlyric>{lyric}</songlyric>
     <commenturl/>
-    <appattach>  <!-- 补充CDN相关字段 -->
+    <appattach> <!-- 恢复简洁结构 -->
         <totallen>0</totallen>
         <attachid/>
         <emoticonmd5/>
-        <fileext>jpg</fileext>
+        <fileext/>
         <aeskey/>
-        <cdnthumburl>{cover_url}</cdnthumburl>
-        <cdnthumbaeskey/>
-        <cdnthumbmd5/>
-        <encryver>1</encryver>
-        <cdnthumblength>0</cdnthumblength>
-        <cdnthumbheight>100</cdnthumbheight>
-        <cdnthumbwidth>100</cdnthumbwidth>
     </appattach>
     <webviewshared>
         <publisherId/>
@@ -484,22 +470,15 @@ class Music_puls(PluginBase):
     <dataurl>{music_url}</dataurl>
     <lowurl>{url}</lowurl>
     <lowdataurl>{music_url}</lowdataurl>
-    <thumburl>{cover_url}</thumburl>  <!-- 使用有效图片链接 -->
+    <thumburl /> <!-- 改为空标签 -->
     <songlyric>{lyric}</songlyric>
-    <songalbumurl>{cover_url}</songalbumurl>
-    <appattach>  <!-- 补充CDN相关字段 -->
+    <songalbumurl>{cover_url}</songalbumurl> <!-- 依赖此字段显示图片 -->
+    <appattach> <!-- 恢复简洁结构 -->
         <totallen>0</totallen>
         <attachid/>
         <emoticonmd5/>
-        <fileext>jpg</fileext>
+        <fileext/>
         <aeskey/>
-        <cdnthumburl>{cover_url}</cdnthumburl>
-        <cdnthumbaeskey/>
-        <cdnthumbmd5/>
-        <encryver>1</encryver>
-        <cdnthumblength>0</cdnthumblength>
-        <cdnthumbheight>100</cdnthumbheight>
-        <cdnthumbwidth>100</cdnthumbwidth>
     </appattach>
     <weappinfo>
         <pagepath/>
@@ -528,7 +507,7 @@ class Music_puls(PluginBase):
     <lowurl>{url}</lowurl>
     <lowdataurl>{music_url}</lowdataurl>
     <recorditem/>
-    <thumburl>{cover_url}</thumburl>  <!-- 使用有效图片链接 -->
+    <thumburl /> <!-- 改为空标签 -->
     <messageaction/>
     <laninfo/>
     <extinfo/>
@@ -536,7 +515,7 @@ class Music_puls(PluginBase):
     <sourcedisplayname/>
     <songlyric>{lyric}</songlyric>
     <commenturl/>
-    <appattach>
+    <appattach> <!-- 恢复简洁结构 -->
         <totallen>0</totallen>
         <attachid/>
         <emoticonmd5/>
