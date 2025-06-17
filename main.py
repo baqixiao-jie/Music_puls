@@ -9,9 +9,9 @@ from utils.plugin_base import PluginBase
 
 
 class Music_puls(PluginBase):
-    description = "点歌插件魔改版，支持指令：点歌 歌曲名、切换卡片、切换列表。"
+    description = "点歌插件魔改版，支持指令：点歌 歌曲名、切换卡片、切换列表、日志开关。"
     author = "电脑小白"
-    version = "2.0.4"
+    version = "2.0.5"
 
     def __init__(self):
         super().__init__()
@@ -19,8 +19,13 @@ class Music_puls(PluginBase):
         with open("plugins/Music_puls/config.toml", "rb") as f:
             plugin_config = tomllib.load(f)
 
-        config = plugin_config["Music_puls"]
+        with open("main_config.toml", "rb") as f:
+            main_config = tomllib.load(f)
 
+        config = plugin_config["Music_puls"]
+        main_config = main_config["XYBot"]
+
+        self.admins = main_config["admins"]
         self.enable = config["enable"]
         self.command = config["command"]
         self.command_format = config["command-format"]
@@ -137,68 +142,13 @@ class Music_puls(PluginBase):
 
         content = str(message["Content"]).strip()
         command = content.split(" ")
-
-        # 读取主配置中的管理员列表和认证密码（关键修改）
-        with open("main_config.toml", "rb") as f:
-            main_config = tomllib.load(f)
-        admins = main_config.get("admins", [])
-        # 从[Admin]部分读取密码（使用管理后台密码作为认证密码）
-        correct_password = main_config.get("Admin", {}).get("password", "admin123")  # 默认值保持兼容
         sender_wxid = message["SenderWxid"]
 
-        # 新增：mc认证指令处理（用户认证为管理员）
-        if command[0] == "mc认证" and len(command) >= 2:
-            if self.log_enabled:
-                logger.info(f"触发认证指令 | 用户: {sender_wxid}")
-            input_password = " ".join(command[1:])
-            if input_password == correct_password:  # 使用配置读取的密码
-                try:
-                    # 读取插件配置
-                    with open("plugins/Music_puls/config.toml", "rb") as f:
-                        plugin_config = tomllib.load(f)
-                    # 添加用户ID到允许列表（去重）
-                    allowed_users = plugin_config["Music_puls"].get("admins", {}).get("allowed_users", [])
-                    if sender_wxid not in allowed_users:
-                        allowed_users.append(sender_wxid)
-                        # 确保[Music_puls.admins]存在（兼容旧配置）
-                        if "admins" not in plugin_config["Music_puls"]:
-                            plugin_config["Music_puls"]["admins"] = {}
-                        plugin_config["Music_puls"]["admins"]["allowed_users"] = allowed_users
-                        # 写入配置
-                        with open("plugins/Music_puls/config.toml", "wb") as f:
-                            tomli_w.dump(plugin_config, f)
-                        await bot.send_at_message(
-                            message["FromWxid"],
-                            f"-----Music_puls-----\n✅认证成功！您已获得管理权限",
-                            [sender_wxid]
-                        )
-                        if self.log_enabled:
-                            logger.info(f"用户认证成功 | wxid: {sender_wxid}")
-                    else:
-                        await bot.send_at_message(
-                            message["FromWxid"],
-                            f"-----Music_puls-----\nℹ️您已认证过，无需重复操作",
-                            [sender_wxid]
-                        )
-                except Exception as e:
-                    await bot.send_at_message(
-                        message["FromWxid"],
-                        f"-----Music_puls-----\n❌认证失败：{str(e)}",
-                        [sender_wxid]
-                    )
-                    if self.log_enabled:
-                        logger.error(f"认证异常 | 错误: {str(e)}")
-            else:
-                await bot.send_at_message(
-                    message["FromWxid"],
-                    f"-----Music_puls-----\n❌密码错误！认证失败",
-                    [sender_wxid]
-                )
-                if self.log_enabled:
-                    logger.warning(f"认证失败 | 用户: {sender_wxid} | 错误密码: {input_password}")
-            return False
         # 新增：配置修改指令处理
         if command[0] == "切换卡片":
+            if sender_wxid not in self.admins:
+                await bot.send_text_message(message["FromWxid"], "你没有权限使用此命令")
+                return False
             if self.log_enabled:
                 logger.info(f"触发卡片切换指令 | 用户: {message['SenderWxid']}")
             try:
@@ -232,6 +182,9 @@ class Music_puls(PluginBase):
             return False
 
         if command[0] == "日志开关":
+            if sender_wxid not in self.admins:
+                await bot.send_text_message(message["FromWxid"], "你没有权限使用此命令")
+                return False
             if self.log_enabled:
                 logger.info(f"触发日志开关指令 | 用户: {message['SenderWxid']}")
             try:
@@ -264,6 +217,9 @@ class Music_puls(PluginBase):
             return False
 
         if command[0] == "切换列表":
+            if sender_wxid not in self.admins:
+                await bot.send_text_message(message["FromWxid"], "你没有权限使用此命令")
+                return False
             if self.log_enabled:
                 logger.info(f"触发列表显示开关指令 | 用户: {message['SenderWxid']}")
             try:
