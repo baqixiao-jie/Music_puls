@@ -32,6 +32,7 @@ class Music_puls(PluginBase):
         self.play_command = config.get("play_command", "播放")
         self.search_results = {}
         self.api_url = config["api_url"]
+        self.api_key = config["api_key"]
         self.log_enabled = config.get("log", {}).get("enabled", True)
         self.log_level = config.get("log", {}).get("level", "DEBUG").upper()
         self.fetch_song_list = config.get("features", {}).get("fetch_song_list", True)
@@ -44,8 +45,9 @@ class Music_puls(PluginBase):
         """调用API获取歌曲列表."""
         # 修复：补充type=text参数，明确要求API返回文本格式数据（与解析逻辑匹配）
         params = {
-            "gm": song_name.replace(" ", "+"),
-            "type": "text"  # 关键新增：指定返回文本格式，确保_parse_song_list能正确解析
+            "key": self.api_key,
+            "msg": song_name,
+            "type": "text"
         }
         # 新增：日志开关控制
         if self.log_enabled:
@@ -101,7 +103,8 @@ class Music_puls(PluginBase):
         """调用API获取歌曲信息，需要指定歌曲序号."""
         # 修复：将歌曲名中的空格替换为+，适配API参数要求
         params = {
-            "gm": song_name.replace(" ", "+"),  # 关键修改：处理空格
+            "key": self.api_key,
+            "msg": song_name,
             "n": index,
             "type": "json",
         }
