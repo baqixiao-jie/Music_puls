@@ -3,7 +3,8 @@ enable = true
 command = ["点歌", "音乐"]
 command-format = "请使用「点歌 歌曲名」格式点歌"
 play_command = "播放"
-api_url = "https://www.hhlqilongzhu.cn/api/dg_kgmusic.php"
+api_url = "https://sdkapi.hhlqilongzhu.cn/api/dgMusic_kugou/"
+api_key = "你的key" #请求密钥key请前往龙珠api官群(914956181)自助免费获取
 card_type = "摇一摇搜歌"  # 切换为新摇一摇卡片（改为原卡片）
 # 新增日志配置
 [Music_puls.log]
